@@ -21,9 +21,6 @@ app = Flask(__name__)
 
 
 # Function Home Page, penjelasan fungsi aplikasi, dan kolom input data dari HOBO untuk dihitung waktunya
-# @app.route('/')
-# def form():
-#     return render_template('halaman_utama.html')
 @app.route('/')
 def index():
     return render_template('halaman_utama.html')
@@ -41,46 +38,58 @@ def process():
         return render_template('nodata.html')
     RH2 = request.form['RH2']
     RH2 = int(RH2) / 100
+    Td2 = request.form['Td2']
+    Td2 = float(Td2)
     excel_data = ExcelFile(io.BytesIO(f.stream.read()))
     data = excel_data.parse(excel_data.sheet_names[0])
 
-    hasilSimulasi = {} # dictionary untuk ditampilkan di window table
-    tfs = 240 #sekon [Durasi siklus pengoperasian fcs] (Hasil percobaan pendahuluan)
-
+    # Mendeklarasikan variabel
+    hasilSimulasi = pd.DataFrame(columns = ['RH1','RH2','Td1','Td2','I','AH1','AH2','deltaAH','durasiFogging','durasiOff'])
+    durasiFullSiklus = 240 #sekon [Durasi siklus pengoperasian fcs] (Hasil percobaan pendahuluan)
+    massaUdaraKering = 341.04 #kg, didapat dari volume greenhouse * masa jenis udara
+#   # Hitung debit nozzle # 12 nozzle, masing masing 0.00125 m3 / sekon
+    debitNozzle = 12 * 0.00125 
 
         # Iterasi untuk menghitung ts dan tf masing-masing siklus
     for index,row in data.iterrows() :
         Td1 = row [3]
-        RH1 = row [1] * (1 / 100)
+        RH1 = row [1] * (1 / 100) # dibagi 100 supaya jadi persentase
 
-        # Two = row [8] #data TWo diabaikan, yang diabil adalah hasil perhitungan
         #pyschrolib digunakan untuk mendapatkan data TWI  TWO dan XSI
         AH1 = psychrolib.GetHumRatioFromRelHum(Td1,RH1,101300)
-        AH2 = psychrolib.GetHumRatioFromRelHum(27.4,RH2,101300)
+        AH2 = psychrolib.GetHumRatioFromRelHum(Td2,RH2,101300)
 
 #     # 4. Cari selisih kelembapan mutlak dari HOBO Dan Target
         deltaAH = abs(AH2 - AH1)
-#     # 2. Massa udara kering = volume rumah kaca x massa JENIS udara
-        massaUdaraKering = 341.04 #kg 1.225
-#     # 3. Hitung debit nozzle # 12 nozzle, masing masing 0.00125 m3 / sekon
-        debitNozzle = 12 * 0.00125 
 #     # 2. Hitung massa air = selisih kelembapan mutlak x massa udara kering / RH2
         massaAir = deltaAH * massaUdaraKering / RH2
 #     # 3.durasi = massa air / debit nozzle
         durasiFogging = massaAir / debitNozzle 
         # print(index, RH1, RH2, Td1, AH1, AH2, deltaAH, durasiFogging, massaAir)
-        if(durasiFogging > tfs):
-            durasiFogging = tfs
-        tf = durasiFogging
-        ts = tfs - tf
- 
-        hasilSimulasi[str(index)] = {'tf': tf, 'ts': ts, 'description': 'siklus #'+str(index)}
-    
-    print(hasilSimulasi)
+        if(durasiFogging > durasiFullSiklus):
+            durasiFogging = durasiFullSiklus
 
-#     dataT = [] # array untuk ditampilkan di diagram
-#     dataX = [0]
-#     dataY = [1]
+        durasiOff = durasiFullSiklus - durasiFogging
+
+#         tf0=tf0+tf
+#         dataX.append(tf0)
+#         dataY.append(1)
+
+#         dataX.append(tf0)
+#         dataY.append(0)
+
+#         tf0= tf0+ts
+#         dataX.append(tf0)
+#         dataY.append(0)
+
+#         dataX.append(tf0)
+#         dataY.append(1)
+ 
+        hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': 0, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
+        print(hasilSimulasi)
+
+    # dataX = [0]
+    # dataY = [1]
 #     # dataTF = []
 #     # dataTS = []
 #     tf0=0
@@ -114,23 +123,6 @@ def process():
 #         tf = round(tfs*mf/mr)
 #         ts = round(tfs - tf)
         
-#         #dataT adalah array hasil durasi untuk ditampilkan pada Grafik
-#         dataT.append(tf)
-#         dataT.append(ts)
-
-#         tf0=tf0+tf
-#         dataX.append(tf0)
-#         dataY.append(1)
-
-#         dataX.append(tf0)
-#         dataY.append(0)
-
-#         tf0= tf0+ts
-#         dataX.append(tf0)
-#         dataY.append(0)
-
-#         dataX.append(tf0)
-#         dataY.append(1)
 
 
 #         #dataTF dan data TS adalah array yang akan dijadikan dataframe durasi hasil untuk di save di excel atau dalam bentuk tabel
@@ -165,8 +157,8 @@ def process():
 #     return()
 
 # # function untuk menerima data json hasil perhitungan dan menampilkannya dalam bentuk grafik
-# def build_chart():
-#     return()
+def build_chart():
+    return()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
