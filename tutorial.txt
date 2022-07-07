@@ -1,6 +1,6 @@
 #semua ini di terminal, pastikan berada di folder skripsi ini
 
-conda env create -f idzenv.yml
+conda env create -f idzenv1.yml
 Activate the new environment: conda activate idznienv
 $env:FLASK_APP = "app"
 flask run 
