@@ -1,0 +1,11 @@
+#semua ini di terminal, pastikan berada di folder skripsi ini
+
+conda env create -f idzenv.yml
+Activate the new environment: conda activate idznienv
+$env:FLASK_APP = "app"
+flask run 
+
+setelah itu buka browser 127.0.0.1:5000
+pilih file hobo exel
+submit
+
