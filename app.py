@@ -54,6 +54,7 @@ def process():
     for index,row in data.iterrows() :
         Td1 = row [3]
         RH1 = row [1] * (1 / 100) # dibagi 100 supaya jadi persentase
+        I = row[4]
 
         #pyschrolib digunakan untuk mendapatkan data TWI  TWO dan XSI
         AH1 = psychrolib.GetHumRatioFromRelHum(Td1,RH1,101300)
@@ -70,20 +71,7 @@ def process():
             durasiFogging = durasiFullSiklus
 
         durasiOff = durasiFullSiklus - durasiFogging
-
-#         tf0=tf0+tf
-#         dataX.append(tf0)
-#         dataY.append(1)
-
-#         dataX.append(tf0)
-#         dataY.append(0)
-
-#         tf0= tf0+ts
-#         dataX.append(tf0)
-#         dataY.append(0)
-
-#         dataX.append(tf0)
-#         dataY.append(1)
+        
         RH1 = round(RH1,2)
         RH2 = round(RH2,2)
         Td1 = round(Td1,1)
@@ -91,67 +79,13 @@ def process():
         AH2 = round(AH2,4)
         deltaAH = round(deltaAH,4)
         durasiFogging = round(durasiFogging,0)
-        hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': 0, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
+        durasiOff = round(durasiOff,0)
+        hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': I, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
         print(hasilSimulasi)
 
-    # dataX = [0]
-    # dataY = [1]
-#     # dataTF = []
-#     # dataTS = []
-#     tf0=0
+        dataGrafik = build_chart(hasilSimulasi)
 
-#     # Iterasi untuk menghitung ts dan tf masing-masing siklus
-#     for index,row in data.iterrows() :
-#         Tdi = row [2]
-#         RHi = row [3]
-
-#         AH1 = psychrolib.GetHumRatioFromRelHum(Tdi,RHi,101300)
-#         AH2 = psychrolib.GetHumRatioFromRelHum(Tdo,rh2,101300)
-        
-#         # Urutan Formula
-#         # Si = So*T*(1) #karena gabutuh Si jadi diabaikan
-#         estwi = 0.61078*(exp**((17.2693882*Twi)/(Twi+237.3)))
-#         estwo = 0.61078*(exp**((17.2693882*Two)/(Two+237.3)))
-#         ei = estwi - 0.000662*Po*(Tdi-Twi)
-#         eo = estwo - 0.000662*Po*(Tdo-Two)
-#         estdi = 0.61078*(exp**((17.2693882*Tdi)/(Tdi+237.3)))
-#         estdo = 0.61078*(exp**((17.2693882*Tdo)/(Tdo+237.3)))
-    
-#         Xi = E*(ei/(Po-ei))
-#         Xo = E*(eo/(Po-eo))
-#         Ii = Ca*Tdi+(l+(Cv*Tdi))*Xi*1000
-#         Io = Ca*Tdo+(l+(Cv*Tdo))*Xo
-
-#         #pyschrolib digunakan untuk mendapatkan data TWI  TWO dan XSI
-#         Xsi = psychrolib.GetHumRatioFromEnthalpyAndTDryBulb(Ii,Tdi)
-#         DX = abs(Xsi - Xi)
-#         mf = DX * Vsp / 60
-#         tf = round(tfs*mf/mr)
-#         ts = round(tfs - tf)
-        
-
-
-#         #dataTF dan data TS adalah array yang akan dijadikan dataframe durasi hasil untuk di save di excel atau dalam bentuk tabel
-#         # dataTF.append(tf)
-#         # dataTS.append(ts)
-        
-#         diti[str(index)] = {'Fogging': tf, 'Standby': ts, 'Keterangan': 'siklus #'+str(index)}
-    
-#     # print(diti)
-#     # Dibuat dataframe durasi_df
-#     dataX.pop()
-#     dataY.pop()
-#     durasi_on_off_df = pd.DataFrame( {'status':dataY,'time': dataX})
-#     # print(durasi_on_off_df)
-    
-#     trace1 = go.Scatter(x=durasi_on_off_df["time"], y=durasi_on_off_df["status"])
-#     layout = go.Layout(title="Timelincone Fogging", xaxis=dict(title="Time (detik)"),
-#                        yaxis=dict(title="Status on/off"), )
-
-#     fig = go.Figure(data=[trace1], layout=layout)
-#     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-#     return render_template('result.html', plot=fig_json, diti=diti)
-    return render_template('halaman_hasil.html', data = hasilSimulasi)
+    return render_template('halaman_hasil.html', plot= dataGrafik, data = hasilSimulasi)
     
 
 # # Function untuk menampilkan halaman
@@ -163,8 +97,36 @@ def process():
 #     return()
 
 # # function untuk menerima data json hasil perhitungan dan menampilkannya dalam bentuk grafik
-def build_chart():
-    return()
+def build_chart(dfsimulasi):
+    dataX = [0]
+    dataY = [1]
+    tf0 = 0
+
+    for index, row in dfsimulasi.iterrows():
+        tf0=tf0+ row.durasiFogging
+        dataX.append(tf0)
+        dataY.append(1)
+
+        dataX.append(tf0)
+        dataY.append(0)
+
+        tf0= tf0+row.durasiOff
+        dataX.append(tf0)
+        dataY.append(0)
+
+        dataX.append(tf0)
+        dataY.append(1)
+
+    dataX.pop()
+    dataY.pop()
+
+    durasi_on_off_df = pd.DataFrame( {'status':dataY,'time': dataX})
+    trace1 = go.Scatter(x=durasi_on_off_df["time"], y=durasi_on_off_df["status"])
+    layout = go.Layout(title="Timeline status on-off pompa pengabutan", xaxis=dict(title="waktu (detik)"), yaxis=dict(title="Status on/off"), )
+    fig = go.Figure(data=[trace1], layout=layout)
+    fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return(fig_json)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
