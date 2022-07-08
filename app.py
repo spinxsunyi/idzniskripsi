@@ -137,7 +137,6 @@ def build_chart_suhu(dfsimulasi):
         dataX.append(tf0)
         dataY.append(row.Td1)
 
-
     dataGrSuhu = pd.DataFrame( {'suhu':dataY,'time': dataX})
     trace2 = go.Scatter(x=dataGrSuhu["time"], y=dataGrSuhu["suhu"])
     layout2 = go.Layout(title="Timeline suhu dalam rumah kaca", xaxis=dict(title="waktu (detik)"), yaxis=dict(title="suhu (celcius)"), )
