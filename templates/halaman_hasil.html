@@ -44,6 +44,12 @@
                 </div>
                 <div class="row">
                     <h4>Grafik Simulasi Suhu Rumah Kaca</h4>
+                    <div class=”chart” id="chart2">
+                        <script>
+                          var fig2 = {{ plot2 | safe}};
+                          Plotly.plot("chart2", fig2.data, fig2.layout, { displaylogo: false });
+                        </script>
+                    </div>
                 </div>
                 <div class="row">
                     <h4>Tabel Perhitungan Simulasi</h4>

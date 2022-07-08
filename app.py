@@ -81,11 +81,11 @@ def process():
         durasiFogging = round(durasiFogging,0)
         durasiOff = round(durasiOff,0)
         hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': I, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
-        print(hasilSimulasi)
 
-        dataGrafik = build_chart(hasilSimulasi)
+    dataGrafik = build_chart(hasilSimulasi)
+    dataGrafikSuhu = build_chart_suhu(hasilSimulasi)
 
-    return render_template('halaman_hasil.html', plot= dataGrafik, data = hasilSimulasi)
+    return render_template('halaman_hasil.html', plot=dataGrafik, plot2=dataGrafikSuhu, data=hasilSimulasi)
     
 
 # # Function untuk menampilkan halaman
@@ -125,8 +125,25 @@ def build_chart(dfsimulasi):
     layout = go.Layout(title="Timeline status on-off pompa pengabutan", xaxis=dict(title="waktu (detik)"), yaxis=dict(title="Status on/off"), )
     fig = go.Figure(data=[trace1], layout=layout)
     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
     return(fig_json)
+
+def build_chart_suhu(dfsimulasi):
+    dataY = []
+    tf0 = 0
+    dataX = []
+
+    for index, row in dfsimulasi.iterrows():
+        dataX.append(tf0)
+        dataY.append(row.Td1)
+        tf0 = tf0 + 240
+
+
+    dataGrSuhu = pd.DataFrame( {'suhu':dataY,'time': dataX})
+    trace2 = go.Scatter(x=dataGrSuhu["time"], y=dataGrSuhu["suhu"])
+    layout2 = go.Layout(title="Timeline suhu dalam rumah kaca", xaxis=dict(title="waktu (detik)"), yaxis=dict(title="suhu (celcius)"), )
+    fig2 = go.Figure(data=[trace2], layout=layout2)
+    fig_json2 = json.dumps(fig2, cls=plotly.utils.PlotlyJSONEncoder)
+    return(fig_json2)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
