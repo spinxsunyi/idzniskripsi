@@ -129,13 +129,13 @@ def build_chart(dfsimulasi):
 
 def build_chart_suhu(dfsimulasi):
     dataY = []
-    tf0 = 0
+    tf0 = -240
     dataX = []
 
     for index, row in dfsimulasi.iterrows():
+        tf0 = tf0 + 240
         dataX.append(tf0)
         dataY.append(row.Td1)
-        tf0 = tf0 + 240
 
 
     dataGrSuhu = pd.DataFrame( {'suhu':dataY,'time': dataX})
