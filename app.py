@@ -84,7 +84,13 @@ def process():
 
 #         dataX.append(tf0)
 #         dataY.append(1)
- 
+        RH1 = round(RH1,2)
+        RH2 = round(RH2,2)
+        Td1 = round(Td1,1)
+        AH1 = round(AH1,4)
+        AH2 = round(AH2,4)
+        deltaAH = round(deltaAH,4)
+        durasiFogging = round(durasiFogging,0)
         hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': 0, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
         print(hasilSimulasi)
 
@@ -145,7 +151,7 @@ def process():
 #     fig = go.Figure(data=[trace1], layout=layout)
 #     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 #     return render_template('result.html', plot=fig_json, diti=diti)
-    return render_template('halaman_hasil.html')
+    return render_template('halaman_hasil.html', data = hasilSimulasi)
     
 
 # # Function untuk menampilkan halaman
