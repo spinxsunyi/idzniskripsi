@@ -45,7 +45,7 @@
                             <!-- to get an API token!-->
                             <form class="form-subscribe" id="mainForm" action="/process" method="post" enctype="multipart/form-data">
                                 <!-- Email address input-->
-                                <div class="row">
+                                <div class="row align-middle">
                                     <div class="col">
                                         <h3>Pilih file data uji</h3>
                                         <input class="form-control form-control-lg" id="dataUji" type="file" name="data_file" placeholder="file.." data-sb-validations="required" />
@@ -54,14 +54,25 @@
                                 </div>
                                 <div class="row align-middle">
                                     <div class="col-lg-6 align-middle">
-                                        <h5>Masukan target RH</h5>
+                                        <h5>Masukkan target RH</h5>
                                         <input class="form-control form-control-lg" id="RH2" type="number" name="RH2" placeholder="80" data-sb-validations="required" /> <h5>%</h5>
                                     </div>
                                     <div class="col-lg-6 align-middle">
-                                        <h5>Masukan suhu pada target RH</h5>
+                                        <h5>Masukkan suhu pada target RH</h5>
                                         <input class="form-control form-control-lg" id="Td2" type="text" name="Td2" placeholder="27.4" data-sb-validations="required" /><h5>Celcius</h5>
                                     </div>
                                 </div>
+                                <div class="row align-middle">
+                                    <div class="col-lg-6 align-middle">
+                                        <h5>Masukkan persentase debit</h5>
+                                        <input class="form-control form-control-lg" id="persenDebit" type="number" name="persenDebit" value="100" data-sb-validations="required" />Idealnya 100%<h5>%</h5>
+                                    </div>
+                                    <div class="col-lg-6 align-middle">
+                                        <h5>Masukkan persentase penguapan</h5>
+                                        <input class="form-control form-control-lg" id="persenPenguapan" type="number" name="persenPenguapan" value="100" data-sb-validations="required" />Idealnya 100%<h5>%</h5>
+                                    </div>
+                                </div>
+
                                 <div class="row">
                                     <div class="col justify-content-center"><button class="btn btn-primary btn-lg" id="submitButton" type="submit">Submit</button></div>
                                 </div>
@@ -95,7 +106,7 @@
                         <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
                             <div class="features-icons-icon d-flex"><i class="bi-window m-auto text-primary"></i></div>
                             <h3>Pilih file HOBO yang akan diolah datanya</h3>
-                            <p class="lead mb-0">Pastikan file hobo yg dipilih sudah sesuai format. Masukan nilai target RH dan suhu pada target RH. Klik Submit untuk memproses data</p>
+                            <p class="lead mb-0">Pastikan file hobo yg dipilih sudah sesuai format. Masukkan nilai target RH dan suhu pada target RH. Klik Submit untuk memproses data</p>
                         </div>
                     </div>
                     <div class="col-lg-4">

@@ -40,6 +40,12 @@ def process():
     RH2 = int(RH2) / 100
     Td2 = request.form['Td2']
     Td2 = float(Td2)
+    persenPenguapan = request.form['persenPenguapan']
+    persenPenguapan = int(persenPenguapan) / 100
+    persenDebit = request.form['persenDebit']
+    persenDebit = int(persenDebit) / 100
+
+
     excel_data = ExcelFile(io.BytesIO(f.stream.read()))
     data = excel_data.parse(excel_data.sheet_names[0])
 
@@ -48,7 +54,7 @@ def process():
     durasiFullSiklus = 240 #sekon [Durasi siklus pengoperasian fcs] (Hasil percobaan pendahuluan)
     massaUdaraKering = 341.04 #kg, didapat dari volume greenhouse * masa jenis udara
 #   # Hitung debit nozzle # 12 nozzle, masing masing 0.00125 m3 / sekon
-    debitNozzle = 12 * 0.00125 
+    debitNozzle = 12 * 0.00125 * persenDebit  # debit nozzle * %debit. Ideally 100%
 
         # Iterasi untuk menghitung ts dan tf masing-masing siklus
     for index,row in data.iterrows() :
@@ -63,7 +69,9 @@ def process():
 #     # 4. Cari selisih kelembapan mutlak dari HOBO Dan Target
         deltaAH = abs(AH2 - AH1)
 #     # 2. Hitung massa air = selisih kelembapan mutlak x massa udara kering / RH2
-        massaAir = deltaAH * massaUdaraKering / RH2
+        massaAir = deltaAH * massaUdaraKering / RH2 
+        massaAir = massaAir / persenPenguapan
+        # massa air / %penguapan
 #     # 3.durasi = massa air / debit nozzle
         durasiFogging = massaAir / debitNozzle 
         # print(index, RH1, RH2, Td1, AH1, AH2, deltaAH, durasiFogging, massaAir)
