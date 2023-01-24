@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>S</title>
+    <title>Hasil Simulasi Pengabutan</title>
     <!-- Favicon-->
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
     <!-- Bootstrap icons-->
@@ -20,13 +20,44 @@
     <script src=https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js></script>
     <script src=https://cdn.plot.ly/plotly-latest.min.js></script>
 
+
+
+    <script>
+        var fig = {{ plot  | safe}};
+        var fig2 = {{ plot2 | safe}};
+        var fig3 = {{ plot3 | safe}};
+
+        var seconds = 0;
+        var temp_fig = { x: [], y: [] };
+        var temp_fig2 = { x: [], y: [] };
+        var temp_fig3 = { x: [], y: [] };
+
+        temp_fig.x = fig.data[0].x; temp_fig.y = fig.data[0].y;
+        fig.data[0].x = []; fig.data[0].y = [];
+        fig.data[0].x.push(temp_fig.x[0]); fig.data[0].y.push(temp_fig.y[0]);
+
+        temp_fig2.x = fig2.data[0].x; temp_fig2.y = fig2.data[0].y;
+        fig2.data[0].x = []; fig2.data[0].y = [];
+        fig2.data[0].x.push(temp_fig2.x[0]); fig2.data[0].y.push(temp_fig2.y[0]);
+
+        temp_fig3.x = fig3.data[0].x; temp_fig3.y = fig3.data[0].y;
+        fig3.data[0].x = []; fig3.data[0].y = [];
+        fig3.data[0].x.push(temp_fig3.x[0]); fig3.data[0].y.push(temp_fig3.y[0]);
+
+    </script>
+
+
 </head>
 
 <body>
     <!-- Navigation-->
-    <nav class="navbar navbar-light bg-primary static-top">
-        <div class="container">
-            <a class="navbar-brand" href="#!">Program Penghitung Durasi Operasi Pompa Pengabutan</a>
+    <nav class="navbar navbar-light bg-light static-top">
+        <div style="margin-left : 30px; margin-right: -250px;">
+            <img src="static\assets\img\logotype.png" height="40" alt="">
+        </div>
+        <div class="container justify-content-center">
+            <a class="navbar-brand center" href="#!">
+                Skripsi Idzni Ghassani Shabrina</a>
         </div>
     </nav>
     <!-- Icons Grid-->
@@ -34,20 +65,25 @@
     <div class="container">
         <div class="row">
             <div class="col-9">
-                
+                <h4>Hasil Simulasi Operasi Pengabutan</h4>
+                <div id='seconds-counter'></div>
+                <div>
+                    <input type="number" name="setSecond" id="setSecond" value="" />    
+                    <button> <a onClick=setValue()>update nilai sekon manual</a> </button>    
+                </div>
+                <script>
+                    function setValue() {
+                        var secondNew = parseInt(document.getElementById("setSecond").value);
+                        seconds = secondNew;
+                        console.log(secondNew);
+                    }
+                </script>
+                <br><br>
                 <div class="row">
                     <h4>Grafik Simulasi Operasi Pengabutan</h4>
-                    <div id='seconds-counter'></div>
-                    <div>Fogging:
-                        - Kondisi saat ini X {AKTIF | TIDAK AKTIF}.
-                        - Durasi aktif: X detik; Durasi Tidak Aktif: X detik.
-                        Pembacaan sensor berikutnya di detik ke X.
-                    </div>                    
-                                
                     <div class=”chart” id="chart">
                         <script>
-                            var fig = {{ plot | safe}};
-                            Plotly.plot("chart", fig.data, fig.layout, { displaylogo: false });
+                            Plotly.newPlot("chart", fig.data, fig.layout, { displaylogo: false });
                         </script>
                     </div>
                 </div>
@@ -55,8 +91,15 @@
                     <h4>Grafik Simulasi Suhu Rumah Kaca</h4>
                     <div class=”chart” id="chart2">
                         <script>
-                            var fig2 = {{ plot2 | safe}};
                             Plotly.plot("chart2", fig2.data, fig2.layout, { displaylogo: false });
+                        </script>
+                    </div>
+                </div>
+                <div class="row">
+                    <h4>Grafik Simulasi Kelembapan Udara Rumah Kaca</h4>
+                    <div class=”chart” id="chart3">
+                        <script>
+                            Plotly.plot("chart3", fig3.data, fig3.layout, { displaylogo: false });
                         </script>
                     </div>
                 </div>
@@ -127,14 +170,46 @@
     <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
 
     <script>
-        var seconds = 0;
         var el = document.getElementById('seconds-counter');
+        var cycle = 0;
+        var lastIndex = { fig1: 0, fig2: 0, fig3: 0 };
         function incrementSeconds() {
             seconds += 1;
             el.innerText = "Simulasi sudah berjalan selama " + seconds + " detik";
+            if (Math.floor(seconds / 240) > cycle) {
+                cycle = Math.floor(seconds / 240);
+
+                fig.data[0].x = fig.data[0].x.concat(temp_fig.x.slice(lastIndex.fig1 + 1, lastIndex.fig1 + 5));
+                fig.data[0].y = fig.data[0].y.concat(temp_fig.y.slice(lastIndex.fig1 + 1, lastIndex.fig1 + 5));
+                Plotly.react("chart", fig.data, fig.layout, { displaylogo: false });
+                lastIndex.fig1 += 4;
+
+                fig2.data[0].x = fig2.data[0].x.concat(temp_fig2.x.slice(lastIndex.fig2 + 1, lastIndex.fig2 + 2));
+                fig2.data[0].y = fig2.data[0].y.concat(temp_fig2.y.slice(lastIndex.fig2 + 1, lastIndex.fig2 + 2));
+                Plotly.react("chart2", fig2.data, fig2.layout, { displaylogo: false });
+                lastIndex.fig2 += 1;
+
+                fig3.data[0].x = fig3.data[0].x.concat(temp_fig3.x.slice(lastIndex.fig3 + 1, lastIndex.fig3 + 2));
+                fig3.data[0].y = fig3.data[0].y.concat(temp_fig3.y.slice(lastIndex.fig3 + 1, lastIndex.fig3 + 2));
+                Plotly.react("chart3", fig3.data, fig3.layout, { displaylogo: false });
+                lastIndex.fig3 += 1;
+
+                console.log(fig3.data[0]);
+            }
+
         }
         var cancel = setInterval(incrementSeconds, 1000);
+        console.log(temp_fig);
     </script>
+
 </body>
 
 </html>
+
+<!-- 
+20
+5
+
+1 - 0 | 1-4, 5-8, 9-12, 13-16, 17-20
+2 - 0 | 1, 2, 3, 4, 5
+3 - 0 | 1, 2, 3, 4, 5 -->

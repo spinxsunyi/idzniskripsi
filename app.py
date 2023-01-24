@@ -1,5 +1,5 @@
-__author__ = 'idzni shabrina & suami'
-# VERSI JUNI 2022
+__author__ = 'idzni shabrina'
+# VERSI JANUARY 2023
 from urllib.request import AbstractDigestAuthHandler
 from flask import Flask, make_response, request, render_template
 import io
@@ -44,14 +44,14 @@ def process():
     persenPenguapan = int(persenPenguapan) / 100
     persenDebit = request.form['persenDebit']
     persenDebit = int(persenDebit) / 100
-
+    durasiFullSiklus = int(request.form['durasiFullSiklus']) #240 sekon [Durasi siklus pengoperasian fcs] (Hasil percobaan pendahuluan)
 
     excel_data = ExcelFile(io.BytesIO(f.stream.read()))
     data = excel_data.parse(excel_data.sheet_names[0])
 
-    # Mendeklarasikan variabel
+    # Mendeklarasikan variabel untuk menampung data hasil simulasi
     hasilSimulasi = pd.DataFrame(columns = ['RH1','RH2','Td1','Td2','I','AH1','AH2','deltaAH','durasiFogging','durasiOff'])
-    durasiFullSiklus = 240 #sekon [Durasi siklus pengoperasian fcs] (Hasil percobaan pendahuluan)
+    
     massaUdaraKering = 341.04 #kg, didapat dari volume greenhouse * masa jenis udara
 #   # Hitung debit nozzle # 12 nozzle, masing masing 0.00125 m3 / sekon
     debitNozzle = 12 * 0.00125 * persenDebit  # debit nozzle * %debit. Ideally 100%
@@ -91,18 +91,12 @@ def process():
         hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': I, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
 
     dataGrafik = build_chart(hasilSimulasi)
-    dataGrafikSuhu = build_chart_suhu(hasilSimulasi)
+    dataGrafikSuhu = build_chart_suhu(hasilSimulasi, durasiFullSiklus)
+    dataGrafikHumidity = build_chart_humidity(hasilSimulasi, durasiFullSiklus)
+    jsonHasil = hasilSimulasi.to_json(orient="values")
 
-    return render_template('halaman_hasil.html', plot=dataGrafik, plot2=dataGrafikSuhu, data=hasilSimulasi)
+    return render_template('halaman_hasil.html', plot=dataGrafik, plot2=dataGrafikSuhu, plot3=dataGrafikHumidity, data=hasilSimulasi,parsed=jsonHasil, durasiFullSiklus = durasiFullSiklus)
     
-
-# # Function untuk menampilkan halaman
-# def show_page():
-#     return("processed")
-
-# # function untuk menerima data json hasil perhitungan dan menampilkannya dalam bentuk tabel.
-# def build_table():
-#     return()
 
 # # function untuk menerima data json hasil perhitungan dan menampilkannya dalam bentuk grafik
 def build_chart(dfsimulasi):
@@ -129,19 +123,20 @@ def build_chart(dfsimulasi):
     dataY.pop()
 
     durasi_on_off_df = pd.DataFrame( {'status':dataY,'time': dataX})
+
     trace1 = go.Scatter(x=durasi_on_off_df["time"], y=durasi_on_off_df["status"])
     layout = go.Layout(title="Timeline status on-off pompa pengabutan", xaxis=dict(title="waktu (detik)"), yaxis=dict(title="Status on/off"), )
     fig = go.Figure(data=[trace1], layout=layout)
     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return(fig_json)
 
-def build_chart_suhu(dfsimulasi):
+def build_chart_suhu(dfsimulasi, durasiFullSiklus):
     dataY = []
-    tf0 = -240
+    tf0 = -durasiFullSiklus
     dataX = []
 
     for index, row in dfsimulasi.iterrows():
-        tf0 = tf0 + 240
+        tf0 = tf0 + durasiFullSiklus
         dataX.append(tf0)
         dataY.append(row.Td1)
 
@@ -151,6 +146,23 @@ def build_chart_suhu(dfsimulasi):
     fig2 = go.Figure(data=[trace2], layout=layout2)
     fig_json2 = json.dumps(fig2, cls=plotly.utils.PlotlyJSONEncoder)
     return(fig_json2)
+
+def build_chart_humidity(dfsimulasi, durasiFullSiklus):
+    dataY = []
+    tf0 = - durasiFullSiklus
+    dataX = []
+
+    for index, row in dfsimulasi.iterrows():
+        tf0 = tf0 + durasiFullSiklus
+        dataX.append(tf0)
+        dataY.append(row.RH1)
+
+    dataGrHumid = pd.DataFrame( {'humidity':dataY,'time': dataX})
+    trace3 = go.Scatter(x=dataGrHumid["time"], y=dataGrHumid["humidity"])
+    layout3 = go.Layout(title="Timeline humidity dalam rumah kaca", xaxis=dict(title="waktu (detik)"), yaxis=dict(title="Relative Humidity (%)"), )
+    fig3 = go.Figure(data=[trace3], layout=layout3)
+    fig_json3 = json.dumps(fig3, cls=plotly.utils.PlotlyJSONEncoder)
+    return(fig_json3)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
