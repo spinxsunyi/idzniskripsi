@@ -20,7 +20,7 @@ import plotly.graph_objs as go
 app = Flask(__name__) 
 
 
-# Function Home Page, penjelasan fungsi aplikasi, dan kolom input data dari HOBO untuk dihitung waktunya
+# Function Home Page, penjelasan fungsi aplikasi, dan kolom input data untuk dihitung waktunya
 @app.route('/')
 def index():
     return render_template('halaman_utama.html')
@@ -29,7 +29,7 @@ def index():
 def form():
     return render_template('halaman_hasil.html')
 
-# # Function untuk menerima data input menjadi data frame kemudian menghitung ts dan tf dan menghasilkan output json untuk ditampilkan
+# Function untuk menerima data input menjadi data frame kemudian menghitung ts dan tf dan menghasilkan output json untuk ditampilkan
 @app.route('/process', methods=["POST"])
 def process():
 # Terima data
@@ -44,7 +44,7 @@ def process():
     persenPenguapan = int(persenPenguapan) / 100
     persenDebit = request.form['persenDebit']
     persenDebit = int(persenDebit) / 100
-    durasiFullSiklus = int(request.form['durasiFullSiklus']) #240 sekon [Durasi siklus pengoperasian fcs] (Hasil percobaan pendahuluan)
+    durasiFullSiklus = int(request.form['durasiFullSiklus']) #240 sekon [Batas Optimum Durasi siklus pengoperasian FCS]
 
     excel_data = ExcelFile(io.BytesIO(f.stream.read()))
     data = excel_data.parse(excel_data.sheet_names[0])
@@ -53,30 +53,30 @@ def process():
     hasilSimulasi = pd.DataFrame(columns = ['RH1','RH2','Td1','Td2','I','AH1','AH2','deltaAH','durasiFogging','durasiOff'])
     
     massaUdaraKering = 341.04 #kg, didapat dari volume greenhouse * masa jenis udara
-#   # Hitung debit nozzle # 12 nozzle, masing masing 0.00125 m3 / sekon
-    debitNozzle = 12 * 0.00125 * persenDebit  # debit nozzle * %debit. Ideally 100%
+#   Hitung debit nozzle # 12 nozzle, masing masing 0.00125 m3 / sekon
+    debitNozzle = 0.0022* persenDebit  # debit nozzle * %debit. Ideally 100%
 
-        # Iterasi untuk menghitung ts dan tf masing-masing siklus
+        #Iterasi untuk menghitung ts dan tf masing-masing siklus
     for index,row in data.iterrows() :
         Td1 = row [3]
-        RH1 = row [1] * (1 / 100) # dibagi 100 supaya jadi persentase
+        RH1 = row [1] * (1 / 100) #dibagi 100 supaya jadi persentase
         I = row[4]
 
-        #pyschrolib digunakan untuk mendapatkan data TWI  TWO dan XSI
+        #pyschrolib digunakan untuk mendapatkan data AH
         AH1 = psychrolib.GetHumRatioFromRelHum(Td1,RH1,101300)
         AH2 = psychrolib.GetHumRatioFromRelHum(Td2,RH2,101300)
 
-#     # 4. Cari selisih kelembapan mutlak dari HOBO Dan Target
+#     # 4. Cari selisih kelembaban mutlak dari AH faktual dan AH target
         deltaAH = abs(AH2 - AH1)
-#     # 2. Hitung massa air = selisih kelembapan mutlak x massa udara kering / RH2
-        massaAir = deltaAH * massaUdaraKering / RH2 
+#     # 2. Hitung massa air = selisih kelembaban mutlak x massa udara kering / RH2
+        massaAir = deltaAH * massaUdaraKering 
         massaAir = massaAir / persenPenguapan
         # massa air / %penguapan
 #     # 3.durasi = massa air / debit nozzle
         durasiFogging = massaAir / debitNozzle 
         # print(index, RH1, RH2, Td1, AH1, AH2, deltaAH, durasiFogging, massaAir)
-        if(durasiFogging > durasiFullSiklus):
-            durasiFogging = durasiFullSiklus
+        #if(durasiFogging > durasiFullSiklus):
+            #durasiFogging = durasiFullSiklus
 
         durasiOff = durasiFullSiklus - durasiFogging
         

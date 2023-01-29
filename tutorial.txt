@@ -2,7 +2,7 @@
 cd C:\skripsi\idzniskripsi
 conda env create -f idzenv1.yml
 #Activate the new environment: 
-conda activate idznienv
+conda activate idznienv1
 $env:FLASK_APP = "app"
 flask run 
 
@@ -10,3 +10,8 @@ setelah itu buka browser 127.0.0.1:5000
 pilih file hobo exel
 submit
 
+
+conda update conda
+conda update anaconda-navigator
+conda update navigator-updater
+anaconda-navigator --reset
