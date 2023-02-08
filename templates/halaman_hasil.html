@@ -116,8 +116,10 @@
                                 <th scope="col">AH1</th>
                                 <th scope="col">AH2</th>
                                 <th scope="col">Delta_AH</th>
-                                <th scope="col">Durasi Fogging</th>
+                                <th scope="col">Durasi Fogging Hasil Perhitungan</th>
+                                <th scope="col">Durasi Fogging dengan Batasan</th>
                                 <th scope="col">Durasi Off</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -131,6 +133,7 @@
                                 <td>{{value.AH1}}</td>
                                 <td>{{value.AH2}}</td>
                                 <td>{{value.deltaAH}}</td>
+                                <td>{{value.durasiFoggingPerhitungan}}</td>
                                 <td>{{value.durasiFogging}}</td>
                                 <td>{{value.durasiOff}}</td>
                             </tr>
@@ -194,7 +197,7 @@
                 Plotly.react("chart3", fig3.data, fig3.layout, { displaylogo: false });
                 lastIndex.fig3 += 1;
 
-                console.log(fig3.data[0]);
+                console.log(fig.data[0]);
             }
 
         }

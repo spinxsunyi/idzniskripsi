@@ -38,8 +38,8 @@ def process():
         return render_template('nodata.html')
     RH2 = request.form['RH2']
     RH2 = int(RH2) / 100
-    Td2 = request.form['Td2']
-    Td2 = float(Td2)
+    # Td2 = request.form['Td2']
+    # Td2 = float(Td2)
     persenPenguapan = request.form['persenPenguapan']
     persenPenguapan = int(persenPenguapan) / 100
     persenDebit = request.form['persenDebit']
@@ -59,6 +59,8 @@ def process():
         #Iterasi untuk menghitung ts dan tf masing-masing siklus
     for index,row in data.iterrows() :
         Td1 = row [3]
+        Td2 = row [5]
+        print("Td2 = ", Td2)
         RH1 = row [1] * (1 / 100) #dibagi 100 supaya jadi persentase
         I = row[4]
 
@@ -74,9 +76,10 @@ def process():
         # massa air / %penguapan
 #     # 3.durasi = massa air / debit nozzle
         durasiFogging = massaAir / debitNozzle 
+        durasiFoggingPerhitungan = durasiFogging
         # print(index, RH1, RH2, Td1, AH1, AH2, deltaAH, durasiFogging, massaAir)
-        #if(durasiFogging > durasiFullSiklus):
-            #durasiFogging = durasiFullSiklus
+        if(durasiFogging > durasiFullSiklus):
+            durasiFogging = durasiFullSiklus
 
         durasiOff = durasiFullSiklus - durasiFogging
         
@@ -87,8 +90,9 @@ def process():
         AH2 = round(AH2,4)
         deltaAH = round(deltaAH,4)
         durasiFogging = round(durasiFogging,0)
+        durasiFoggingPerhitungan = round(durasiFoggingPerhitungan,0)
         durasiOff = round(durasiOff,0)
-        hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': I, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff }, ignore_index = True)
+        hasilSimulasi = hasilSimulasi.append({'RH1': RH1, 'RH2': RH2, 'Td1': Td1, 'Td2': Td2, 'I': I, 'AH1': AH1, 'AH2':AH2, 'deltaAH':deltaAH, 'durasiFogging':durasiFogging, 'durasiOff':durasiOff, 'durasiFoggingPerhitungan':durasiFoggingPerhitungan }, ignore_index = True)
 
     dataGrafik = build_chart(hasilSimulasi)
     dataGrafikSuhu = build_chart_suhu(hasilSimulasi, durasiFullSiklus)
